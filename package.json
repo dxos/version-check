@@ -20,6 +20,9 @@
     "build": "tsc",
     "lint": "eslint --format codeframe './src/**/*.ts'"
   },
+  "dependencies": {
+    "semver": "^7.3.2"
+  },
   "devDependencies": {
     "@dxos/eslint-plugin": "^1.0.8",
     "@types/node": "^14.14.7",
