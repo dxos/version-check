@@ -9,6 +9,11 @@
   "bugs": {
     "url": "https://github.com/dxos/lint-version/issues"
   },
+  "keywords": [
+    "version",
+    "package.json",
+    "lint"
+  ],
   "bin": {
     "lint-version": "./main.js"
   },
