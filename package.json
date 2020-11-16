@@ -1,6 +1,14 @@
 {
   "name": "@dxos/lint-version",
   "version": "0.1.0",
+  "license": "./LICENSE",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dxos/lint-version.git"
+  },
+  "bugs": {
+    "url": "https://github.com/dxos/lint-version/issues"
+  },
   "bin": {
     "lint-version": "./main.js"
   },
@@ -17,5 +25,8 @@
     "@types/semver": "^7.3.4",
     "eslint": "^7.13.0",
     "typescript": "^4.0.5"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
