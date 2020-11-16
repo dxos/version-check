@@ -17,7 +17,8 @@
     "main.js"
   ],
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "lint": "eslint --format codeframe './src/**/*.ts'"
   },
   "devDependencies": {
     "@dxos/eslint-plugin": "^1.0.8",
@@ -28,5 +29,8 @@
   },
   "publishConfig": {
     "access": "public"
+  },
+  "eslintConfig": {
+    "extends": "plugin:@dxos/recomended"
   }
 }
