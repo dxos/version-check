@@ -2,7 +2,7 @@
 // Copyright 2020 DXOS.org
 //
 
-import { compare, minVersion } from 'semver';
+import { compare, minVersion, parse } from 'semver';
 
 export type VersionString = string;
 
@@ -19,9 +19,16 @@ export function getPreid (version: VersionString) {
   return typeof tag === 'string' ? tag : undefined;
 }
 
-export function pickHighestVersionWithPreid (versions: VersionString[], preid: string | undefined) {
+export function getMajor(version: VersionString) {
+  if (version.match(/^[a-zA-Z0-9_]+$/)) { // Not a version but a tag (like "beta")
+    return undefined;
+  }
+  return minVersion(version)?.major;
+}
+
+export function pickHighestCompatibleVersion (versions: VersionString[], major: number | undefined, preid: string | undefined) {
   return versions
-    .filter(version => getPreid(version) === preid)
+    .filter(version => getPreid(version) === preid && (!major || parse(version)?.major === major))
     .sort(compare)
     .reverse()[0];
 }

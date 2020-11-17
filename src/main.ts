@@ -8,7 +8,7 @@ import { join } from 'path';
 import yargs from 'yargs';
 
 import { getPackageManifest, PackageManifest } from './npm';
-import { getHighestVersion, getPreid, pickHighestVersionWithPreid, VersionString } from './version';
+import { getHighestVersion, getMajor, getPreid, pickHighestCompatibleVersion, VersionString } from './version';
 import { changePackageVersion, getWorkspaceDependencies, PackageName } from './workspace';
 
 yargs(process.argv.slice(2))
@@ -110,10 +110,8 @@ async function upgrade (opts: UpgradeOpts) {
   const updates: Record<PackageName, { from: VersionString, to: VersionString }> = {};
   for (const name of packages) {
     const currentMaxVersion = getHighestVersion(Object.keys(dependencies[name]));
-    const preid = getPreid(currentMaxVersion);
-
-    const latestVersion = pickHighestVersionWithPreid(Object.keys(manifests[name].versions), preid);
-    assert(latestVersion, `No version found for ${name} with ${preid} preid`);
+    const latestVersion = pickHighestCompatibleVersion(Object.keys(manifests[name].versions), getMajor(currentMaxVersion), getPreid(currentMaxVersion));
+    assert(latestVersion, `No version found for ${name} compatible with ${currentMaxVersion}`);
 
     for (const version of Object.keys(dependencies[name])) {
       if (version !== latestVersion) {
