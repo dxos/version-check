@@ -1,7 +1,12 @@
-import { execSync } from "child_process";
-import { readFileSync, writeFileSync } from "fs";
-import { join } from "path";
-import { VersionString } from "./version";
+//
+// Copyright 2020 DXOS.org
+//
+
+import { execSync } from 'child_process';
+import { readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
+
+import { VersionString } from './version';
 
 export type PackageName = string;
 
@@ -18,13 +23,18 @@ export interface WorkspacePackageInfo {
   mismatchedWorkspaceDependencies: string[]
 }
 
-export function getWorkspaceInfo(): Record<PackageName, WorkspacePackageInfo> {
-  return JSON.parse(execSync('yarn workspaces info', {
-    encoding: 'utf-8'
-  }));
+export function getWorkspaceInfo (): Record<PackageName, WorkspacePackageInfo> {
+  let res = execSync('yarn workspaces info --json', {
+    encoding: 'utf-8',
+    stdio: ['pipe', 'pipe', 'ignore']
+  });
+  if (res.startsWith('yarn workspaces')) {
+    res = res.slice(res.indexOf('\n') + 1, res.lastIndexOf('}') + 1);
+  }
+  return JSON.parse(res);
 }
 
-export function getWorkspaceDependencies(): Record<PackageName, Record<VersionString, DependencyInfo[]>> {
+export function getWorkspaceDependencies (): Record<PackageName, Record<VersionString, DependencyInfo[]>> {
   const workspaceInfo = getWorkspaceInfo();
 
   const dependenciesRecord: Record<string, Record<string, DependencyInfo[]>> = {};
@@ -45,7 +55,7 @@ export function getWorkspaceDependencies(): Record<PackageName, Record<VersionSt
   return dependenciesRecord;
 }
 
-export function changePackageVersion(packageJsonPath: string, dependency: PackageName, version: VersionString) {
+export function changePackageVersion (packageJsonPath: string, dependency: PackageName, version: VersionString) {
   const packageJson = JSON.parse(readFileSync(packageJsonPath, { encoding: 'utf-8' }));
 
   let didUpdate = false;
