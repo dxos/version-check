@@ -7,45 +7,60 @@ import { join } from 'path';
 import { getHighestVersion } from './version';
 import { changePackageVersion, getWorkspaceDependencies } from './workspace';
 
-const shouldFix = process.argv.includes('--fix') || process.argv.includes('-f');
+import yargs from 'yargs'
 
-const dependenciesRecord = getWorkspaceDependencies();
-let shouldError = false;
-let didFix = false;
-for (const dependency of Object.keys(dependenciesRecord)) {
-  if (Object.keys(dependenciesRecord[dependency]).length === 1) {
-    continue; // Only a single specifier across all packages.
-  }
+yargs(process.argv.slice(2))
+  .command<{ fix?: boolean }>('$0', 'check', 
+    yargs => yargs
+      .alias('f', 'fix')
+      .describe('f', 'Fix errors automatically.'),
+    (argv) => {
+      check(!!argv.fix)
+    }
+  )
+  .demandCommand(1)
+  .argv
 
-  if (shouldFix) {
-    const top = getHighestVersion(Array.from(new Set(Object.keys(dependenciesRecord[dependency]))))
-    
-    for (const infos of Object.values(dependenciesRecord[dependency])) {
-      for (const info of infos) {
-        const packageJsonPath = join(process.cwd(), info.path, 'package.json');
-        changePackageVersion(packageJsonPath, dependency, top);
+
+function check(shouldFix: boolean) {
+  const dependenciesRecord = getWorkspaceDependencies();
+  let shouldError = false;
+  let didFix = false;
+  for (const dependency of Object.keys(dependenciesRecord)) {
+    if (Object.keys(dependenciesRecord[dependency]).length === 1) {
+      continue; // Only a single specifier across all packages.
+    }
+
+    if (shouldFix) {
+      const top = getHighestVersion(Array.from(new Set(Object.keys(dependenciesRecord[dependency]))))
+      
+      for (const infos of Object.values(dependenciesRecord[dependency])) {
+        for (const info of infos) {
+          const packageJsonPath = join(process.cwd(), info.path, 'package.json');
+          changePackageVersion(packageJsonPath, dependency, top);
+        }
+      }
+      console.log(chalk`Updating all versions of {bold ${dependency}} to {bold ${top}}`);
+      didFix = true;
+    } else {
+      shouldError = true;
+      console.log();
+      console.log(chalk`Found multiple different version specifiers of {bold ${dependency}} in the workspace:`);
+      for (const [version, infos] of Object.entries(dependenciesRecord[dependency])) {
+        for (const info of infos) {
+          console.log(chalk`\t {bold ${version}} in ${join(process.cwd(), info.path, 'package.json')}`);
+        }
       }
     }
-    console.log(chalk`Updating all versions of {bold ${dependency}} to {bold ${top}}`);
-    didFix = true;
-  } else {
-    shouldError = true;
+  }
+
+  if (didFix) {
     console.log();
-    console.log(chalk`Found multiple different version specifiers of {bold ${dependency}} in the workspace:`);
-    for (const [version, infos] of Object.entries(dependenciesRecord[dependency])) {
-      for (const info of infos) {
-        console.log(chalk`\t {bold ${version}} in ${join(process.cwd(), info.path, 'package.json')}`);
-      }
-    }
+    console.log(chalk`Don't forget to run {bold yarn} to regenerate the lockfile.`);
   }
-}
-
-if (didFix) {
   console.log();
-  console.log(chalk`Don't forget to run {bold yarn} to regenerate the lockfile.`);
-}
-console.log();
 
-if (shouldError) {
-  process.exit(1);
+  if (shouldError) {
+    process.exit(1);
+  }
 }
