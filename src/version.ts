@@ -19,7 +19,7 @@ export function getPreid (version: VersionString) {
   return typeof tag === 'string' ? tag : undefined;
 }
 
-export function getMajor(version: VersionString) {
+export function getMajor (version: VersionString) {
   if (version.match(/^[a-zA-Z0-9_]+$/)) { // Not a version but a tag (like "beta")
     return undefined;
   }

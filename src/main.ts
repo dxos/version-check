@@ -11,6 +11,7 @@ import { getPackageManifest, PackageManifest } from './npm';
 import { getHighestVersion, getMajor, getPreid, pickHighestCompatibleVersion, VersionString } from './version';
 import { changePackageVersion, getWorkspaceDependencies, PackageName } from './workspace';
 
+// eslint-disable-next-line no-unused-expressions
 yargs(process.argv.slice(2))
   .command<{ fix?: boolean }>('$0', 'Check that all packages use same version',
     yargs => yargs
@@ -33,7 +34,6 @@ yargs(process.argv.slice(2))
     }
   )
   .demandCommand(1)
-  // eslint-disable-next-line no-unused-expressions
   .argv;
 
 function check (shouldFix: boolean) {
