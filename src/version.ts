@@ -17,15 +17,23 @@ const isRepoReference = (version: VersionString) => version.match(/^[a-zA-Z0-9_]
 const isTagLiteral = (version: VersionString) => version.match(/^[a-zA-Z0-9_]+$/);
 
 export function getPreid (version: VersionString) {
-  if(isRepoReference(version)) return undefined
-  if(isTagLiteral(version)) return version;
+  if (isRepoReference(version)) {
+    return undefined;
+  }
+  if (isTagLiteral(version)) {
+    return version;
+  }
   const [tag] = minVersion(version)?.prerelease ?? [];
   return typeof tag === 'string' ? tag : undefined;
 }
 
 export function getMajor (version: VersionString) {
-  if(isRepoReference(version)) return undefined
-  if(isTagLiteral(version)) return undefined;
+  if (isRepoReference(version)) {
+    return undefined;
+  }
+  if (isTagLiteral(version)) {
+    return undefined;
+  }
   return minVersion(version)?.major;
 }
 
@@ -41,13 +49,15 @@ const PREID_ORDERING: Preid[] = [
   undefined,
   'beta',
   'alpha'
-]
+];
 
-export function isMoreStable(a: Preid, b: Preid) {
+export function isMoreStable (a: Preid, b: Preid) {
   const aPos = PREID_ORDERING.indexOf(a);
   const bPos = PREID_ORDERING.indexOf(b);
 
-  if(aPos === -1 || bPos === -1) return false;
+  if (aPos === -1 || bPos === -1) {
+    return false;
+  }
 
   return aPos < bPos;
 }

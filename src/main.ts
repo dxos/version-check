@@ -3,6 +3,7 @@
 //
 
 import yargs from 'yargs';
+
 import { check } from './commands/check';
 import { upgrade, UpgradeOpts } from './commands/upgrade';
 
@@ -34,4 +35,3 @@ yargs(process.argv.slice(2))
   )
   .demandCommand(1)
   .argv;
-

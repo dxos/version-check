@@ -1,7 +1,12 @@
-import { join } from "path";
-import { getHighestVersion } from "../version";
-import { changePackageVersion, getWorkspaceDependencies } from "../workspace";
+//
+// Copyright 2020 DXOS.org
+//
+
 import chalk from 'chalk';
+import { join } from 'path';
+
+import { getHighestVersion } from '../version';
+import { changePackageVersion, getWorkspaceDependencies } from '../workspace';
 
 export function check (shouldFix: boolean) {
   const dependenciesRecord = getWorkspaceDependencies();

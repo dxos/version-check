@@ -1,8 +1,13 @@
-import { getPackageManifest, PackageManifest } from "../npm";
-import { getHighestVersion, getMajor, getPreid, isMoreStable, pickHighestCompatibleVersion, VersionString } from "../version";
-import { changePackageVersion, getWorkspaceDependencies, PackageName } from "../workspace";
+//
+// Copyright 2020 DXOS.org
+//
+
 import chalk from 'chalk';
-import { join } from "path";
+import { join } from 'path';
+
+import { getPackageManifest, PackageManifest } from '../npm';
+import { getHighestVersion, getMajor, getPreid, isMoreStable, pickHighestCompatibleVersion, VersionString } from '../version';
+import { changePackageVersion, getWorkspaceDependencies, PackageName } from '../workspace';
 
 export interface UpgradeOpts {
   scope?: string,
@@ -40,14 +45,14 @@ export async function upgrade (opts: UpgradeOpts) {
     const currentMaxVersion = getHighestVersion(Object.keys(dependencies[name]));
     const preid = getPreid(currentMaxVersion);
 
-    if(!opts.force && opts.preid && isMoreStable(preid, opts.preid)) {
-      console.log(chalk`More stable version for {bold ${name}} is already installed: {bold ${currentMaxVersion}}. Skipping.`)
+    if (!opts.force && opts.preid && isMoreStable(preid, opts.preid)) {
+      console.log(chalk`More stable version for {bold ${name}} is already installed: {bold ${currentMaxVersion}}. Skipping.`);
       moreStableInstalled = true;
       continue;
     }
 
     const latestVersion = pickHighestCompatibleVersion(Object.keys(manifests[name].versions), getMajor(currentMaxVersion), opts.preid ?? preid);
-    if(!latestVersion){
+    if (!latestVersion) {
       continue;
     }
 
@@ -58,7 +63,7 @@ export async function upgrade (opts: UpgradeOpts) {
     }
   }
 
-  if(moreStableInstalled) {
+  if (moreStableInstalled) {
     console.log(chalk`\nSome packages were skipped. Run with {bold --force} to apply updates to those.\n`);
   }
 
