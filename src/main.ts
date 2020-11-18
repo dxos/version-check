@@ -8,7 +8,7 @@ import { join } from 'path';
 import yargs from 'yargs';
 
 import { getPackageManifest, PackageManifest } from './npm';
-import { getHighestVersion, getMajor, getPreid, pickHighestCompatibleVersion, VersionString } from './version';
+import { getHighestVersion, getMajor, getPreid, isMoreStable, pickHighestCompatibleVersion, VersionString } from './version';
 import { changePackageVersion, getWorkspaceDependencies, PackageName } from './workspace';
 
 // eslint-disable-next-line no-unused-expressions
@@ -28,7 +28,11 @@ yargs(process.argv.slice(2))
       .string('package')
       .describe('package', 'Upgrade this package only')
       .boolean('dry-run')
-      .describe('dry-run', 'Show what packages would be updated, but don\'t update them'),
+      .describe('dry-run', 'Show what packages would be updated, but don\'t update them')
+      .string('preid')
+      .describe('preid', 'Upgrade packages to specific preid')
+      .boolean('force')
+      .describe('force', 'Force upgrade packages even to lower stability level'),
     argv => {
       upgrade(argv);
     }
@@ -83,6 +87,8 @@ interface UpgradeOpts {
   scope?: string,
   package?: string,
   'dry-run'?: string
+  preid?: string
+  force?: boolean
 }
 
 function match (name: PackageName, opts: UpgradeOpts) {
@@ -108,16 +114,31 @@ async function upgrade (opts: UpgradeOpts) {
   console.log('Done.\n');
 
   const updates: Record<PackageName, { from: VersionString, to: VersionString }> = {};
+  let moreStableInstalled = false;
   for (const name of packages) {
     const currentMaxVersion = getHighestVersion(Object.keys(dependencies[name]));
-    const latestVersion = pickHighestCompatibleVersion(Object.keys(manifests[name].versions), getMajor(currentMaxVersion), getPreid(currentMaxVersion));
-    assert(latestVersion, `No version found for ${name} compatible with ${currentMaxVersion}`);
+    const preid = getPreid(currentMaxVersion);
+
+    if(!opts.force && opts.preid && isMoreStable(preid, opts.preid)) {
+      console.log(chalk`More stable version for {bold ${name}} is already installed: {bold ${currentMaxVersion}}. Skipping.`)
+      moreStableInstalled = true;
+      continue;
+    }
+
+    const latestVersion = pickHighestCompatibleVersion(Object.keys(manifests[name].versions), getMajor(currentMaxVersion), opts.preid ?? preid);
+    if(!latestVersion){
+      continue;
+    }
 
     for (const version of Object.keys(dependencies[name])) {
       if (version !== latestVersion) {
         updates[name] = { from: version, to: latestVersion };
       }
     }
+  }
+
+  if(moreStableInstalled) {
+    console.log(chalk`\nSome packages were skipped. Run with {bold --force} to apply updates to those.\n`);
   }
 
   if (Object.keys(updates).length === 0) {
