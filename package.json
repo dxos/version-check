@@ -1,13 +1,13 @@
 {
-  "name": "@dxos/lint-version",
+  "name": "@dxos/version-check",
   "version": "0.1.4",
   "license": "AGPL-3.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dxos/lint-version.git"
+    "url": "git+https://github.com/dxos/version-check.git"
   },
   "bugs": {
-    "url": "https://github.com/dxos/lint-version/issues"
+    "url": "https://github.com/dxos/version-check/issues"
   },
   "keywords": [
     "version",
@@ -15,7 +15,7 @@
     "lint"
   ],
   "bin": {
-    "lint-version": "./main.js"
+    "version-check": "./main.js"
   },
   "files": [
     "dist",
