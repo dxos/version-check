@@ -69,7 +69,7 @@ export async function upgrade (opts: UpgradeOpts) {
 
   console.log('The following updates will be applied:\n');
   for (const [name, { from, to }] of Object.entries(updates)) {
-    console.log(chalk`\t{bold ${name}} {bold ${from}} -> {bold ${to}}`);
+    console.log(chalk`\t{bold ${name}} {red ${from}} -> {green ${to}}`);
   }
   console.log('\n\n');
 
