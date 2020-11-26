@@ -3,7 +3,7 @@
 //
 
 import chalk from 'chalk';
-import { existsSync, readdirSync, readFileSync } from 'fs';
+import { existsSync, readdirSync, readFileSync, lstatSync } from 'fs';
 import { join } from 'path';
 
 import { VersionString } from '../version';
@@ -13,7 +13,7 @@ export function checkInstalled () {
   const installed = getInstalledModules();
   const versions = getInstalledVersions(installed);
 
-  const format = (pkg: InstalledPackage) => versions[pkg.name].size === 1 ? `${pkg.name}@${pkg.version}` : chalk.red(`${pkg.name}@${pkg.version}`);
+  const format = (pkg: InstalledPackage) => chalk[versions[pkg.name].size === 1 ? 'white' : 'red'](`${pkg.name}@${pkg.version}${pkg.isSymlink ? chalk.bold` <symlink>` : ''}`);
 
   console.log('workspace root');
   printSubtree(installed.root, '', format);
@@ -39,6 +39,7 @@ export function checkInstalled () {
 interface InstalledPackage {
   name: PackageName
   version: VersionString
+  isSymlink: boolean
   dependencies: InstalledPackage[]
 }
 
@@ -49,13 +50,16 @@ function readModules (dir: string): InstalledPackage[] {
   for (const dep of entries) {
     const { name, version } = JSON.parse(readFileSync(join(dir, dep, 'package.json'), { encoding: 'utf-8' }));
 
-    const dependencies = existsSync(join(dir, dep, 'node_modules/@dxos'))
+    const isSymlink = lstatSync(join(dir, dep)).isSymbolicLink();
+
+    const dependencies = (!isSymlink && existsSync(join(dir, dep, 'node_modules/@dxos')))
       ? readModules(join(dir, dep, 'node_modules/@dxos'))
       : [];
 
     res.push({
       name,
       version,
+      isSymlink,
       dependencies
     });
   }
