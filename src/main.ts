@@ -5,8 +5,8 @@
 import yargs from 'yargs';
 
 import { check } from './commands/check';
-import { upgrade, UpgradeOpts } from './commands/upgrade';
 import { checkInstalled } from './commands/installed';
+import { upgrade, UpgradeOpts } from './commands/upgrade';
 
 // eslint-disable-next-line no-unused-expressions
 yargs(process.argv.slice(2))
@@ -20,7 +20,7 @@ yargs(process.argv.slice(2))
   )
   .command<{ fix?: boolean }>('installed', 'Check installed node_modules',
     yargs => yargs,
-    argv => {
+    () => {
       checkInstalled();
     }
   )

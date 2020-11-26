@@ -1,30 +1,37 @@
-import { getWorkspaceInfo, PackageName } from "../workspace";
-import { existsSync, readdirSync, readFileSync } from 'fs'
-import { join } from "path";
-import { VersionString } from "../version";
-import chalk from "chalk";
+//
+// Copyright 2020 DXOS.org
+//
 
-export function checkInstalled() {
-  const installed = getInstalledModules()
-  const versions = getInstalledVersions(installed)
+import chalk from 'chalk';
+import { existsSync, readdirSync, readFileSync } from 'fs';
+import { join } from 'path';
 
-  const format = (pkg: InstalledPackage) => versions[pkg.name].size === 1 ? `${pkg.name}@${pkg.version}` : chalk.red(`${pkg.name}@${pkg.version}`)
+import { VersionString } from '../version';
+import { getWorkspaceInfo, PackageName } from '../workspace';
 
-  console.log('workspace root')
+export function checkInstalled () {
+  const installed = getInstalledModules();
+  const versions = getInstalledVersions(installed);
+
+  const format = (pkg: InstalledPackage) => versions[pkg.name].size === 1 ? `${pkg.name}@${pkg.version}` : chalk.red(`${pkg.name}@${pkg.version}`);
+
+  console.log('workspace root');
   printSubtree(installed.root, '', format);
-  console.log('\n')
-  for(const [name, deps] of Object.entries(installed.packages)) {
-    console.log(name)
+  console.log('\n');
+  for (const [name, deps] of Object.entries(installed.packages)) {
+    console.log(name);
     printSubtree(deps, '', format);
-    console.log('\n')
+    console.log('\n');
   }
 
-  console.log('\nDuplicates found:')
-  for(const [name, version] of Object.entries(versions)) {
-    if(version.size === 1) continue;
-    console.log(`  ${name}:`)
-    for(const ver of version) {
-      console.log(`    ${ver}`)
+  console.log('\nDuplicates found:');
+  for (const [name, version] of Object.entries(versions)) {
+    if (version.size === 1) {
+      continue;
+    }
+    console.log(`  ${name}:`);
+    for (const ver of version) {
+      console.log(`    ${ver}`);
     }
   }
 }
@@ -35,11 +42,11 @@ interface InstalledPackage {
   dependencies: InstalledPackage[]
 }
 
-function readModules(dir: string): InstalledPackage[] {
-  const entries = readdirSync(dir)
+function readModules (dir: string): InstalledPackage[] {
+  const entries = readdirSync(dir);
 
-  const res: InstalledPackage[] = []
-  for(const dep of entries) {
+  const res: InstalledPackage[] = [];
+  for (const dep of entries) {
     const { name, version } = JSON.parse(readFileSync(join(dir, dep, 'package.json'), { encoding: 'utf-8' }));
 
     const dependencies = existsSync(join(dir, dep, 'node_modules/@dxos'))
@@ -49,10 +56,10 @@ function readModules(dir: string): InstalledPackage[] {
     res.push({
       name,
       version,
-      dependencies,
-    })
+      dependencies
+    });
   }
-  return res
+  return res;
 }
 
 interface InstalledModules {
@@ -60,44 +67,44 @@ interface InstalledModules {
   packages: Record<PackageName, InstalledPackage[]>
 }
 
-function getInstalledModules(): InstalledModules {
-  let root: InstalledPackage[] = []
-  const packages: Record<PackageName, InstalledPackage[]> = {}
-  if(existsSync(join(process.cwd(), 'node_modules/@dxos'))) {
-    root = readModules(join(process.cwd(), 'node_modules/@dxos'))
+function getInstalledModules (): InstalledModules {
+  let root: InstalledPackage[] = [];
+  const packages: Record<PackageName, InstalledPackage[]> = {};
+  if (existsSync(join(process.cwd(), 'node_modules/@dxos'))) {
+    root = readModules(join(process.cwd(), 'node_modules/@dxos'));
   }
   const workspaceInfo = getWorkspaceInfo();
-  for(const [name, info] of Object.entries(workspaceInfo)) {
-    if(existsSync(join(process.cwd(), info.location, 'node_modules/@dxos'))) {
-      packages[name] = readModules(join(process.cwd(), info.location, 'node_modules/@dxos'))
+  for (const [name, info] of Object.entries(workspaceInfo)) {
+    if (existsSync(join(process.cwd(), info.location, 'node_modules/@dxos'))) {
+      packages[name] = readModules(join(process.cwd(), info.location, 'node_modules/@dxos'));
     }
   }
   return {
     root,
     packages
-  }
+  };
 }
 
-function getInstalledVersions(modules: InstalledModules): Record<PackageName, Set<VersionString>> {
-  const versions: Record<PackageName, Set<VersionString>> = {}
+function getInstalledVersions (modules: InstalledModules): Record<PackageName, Set<VersionString>> {
+  const versions: Record<PackageName, Set<VersionString>> = {};
 
-  function walkTree(packages: InstalledPackage[]) {
-    for(const pkg of packages) {
+  function walkTree (packages: InstalledPackage[]) {
+    for (const pkg of packages) {
       (versions[pkg.name] ??= new Set()).add(pkg.version);
-      walkTree(pkg.dependencies)
+      walkTree(pkg.dependencies);
     }
   }
 
-  walkTree(modules.root)
-  for(const pkg of Object.values(modules.packages)) {
-    walkTree(pkg)
+  walkTree(modules.root);
+  for (const pkg of Object.values(modules.packages)) {
+    walkTree(pkg);
   }
-  return versions
+  return versions;
 }
 
-function printSubtree(packages: InstalledPackage[], spacing: string, format: (pkg: InstalledPackage) => string) {
-  for(let i = 0; i < packages.length; i++) {
-    console.log(`${spacing}${i !== packages.length - 1 ? '├─ ' : '└─ '} ${format(packages[i])}`)
-    printSubtree(packages[i].dependencies, spacing + (i !== packages.length - 1 ? '│  ' : '   '), format)
+function printSubtree (packages: InstalledPackage[], spacing: string, format: (pkg: InstalledPackage) => string) {
+  for (let i = 0; i < packages.length; i++) {
+    console.log(`${spacing}${i !== packages.length - 1 ? '├─ ' : '└─ '} ${format(packages[i])}`);
+    printSubtree(packages[i].dependencies, spacing + (i !== packages.length - 1 ? '│  ' : '   '), format);
   }
 }
