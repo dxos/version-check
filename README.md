@@ -34,18 +34,18 @@ You would still need to run yarn manually afterwards to update the lockfile.
 
 ```bash
 # Upgrade all @dxos packages to their latest compatible version.
-upgrade --scope @dxos
+yarn version-check upgrade --scope @dxos
 
 # Upgrade concrete package
-upgrade --package @dxos
+yarn version-check upgrade --package @dxos
 
 # Dry-run: only list the changes about to be taken.
-upgrade --scope @dxos --dry-run
+yarn version-check upgrade --scope @dxos --dry-run
 
 # Upgrade to specific preid
 # NOTE: Beta & release packages won't be upgraded.
-upgrade --scope @dxos --preid alpha
+yarn version-check upgrade --scope @dxos --preid alpha
 
 # Upgrade even beta & release packages to their latest alpha version
-upgrade --scope @dxos --preid alpha --force
+yarn version-check upgrade --scope @dxos --preid alpha --force
 ```
