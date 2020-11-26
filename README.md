@@ -26,6 +26,13 @@ Use `-f` to automatically update all versions to the latest one out of them:
 version-check -f
 ```
 
+#### Checking installed node_modules
+
+```bash
+# Print the whole node_modules structure and check for any duplicates
+version-check installed
+```
+
 ### Upgrading
 
 Upgrades packages to their latest published version keeping package preid the same: so alpha packages will be upgraded to latest alpha and stable ones will still be stable.
