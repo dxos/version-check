@@ -23,6 +23,17 @@ export interface WorkspacePackageInfo {
   mismatchedWorkspaceDependencies: string[]
 }
 
+export interface PackageJson {
+  name: PackageName
+  version: VersionString
+  dependencies: Record<PackageName, VersionString>
+  devDependencies: Record<PackageName, VersionString>
+}
+
+export interface ExtendedWorkspacePackageInfo extends WorkspacePackageInfo {
+  manifest: PackageJson
+}
+
 export function getWorkspaceInfo (): Record<PackageName, WorkspacePackageInfo> {
   let res = execSync('yarn workspaces info --json', {
     encoding: 'utf-8',
@@ -34,13 +45,27 @@ export function getWorkspaceInfo (): Record<PackageName, WorkspacePackageInfo> {
   return JSON.parse(res);
 }
 
-export function getWorkspaceDependencies (): Record<PackageName, Record<VersionString, DependencyInfo[]>> {
+export function getExtendedWorkspaceInfo (): Record<PackageName, ExtendedWorkspacePackageInfo> {
   const workspaceInfo = getWorkspaceInfo();
+
+  const res: Record<PackageName, ExtendedWorkspacePackageInfo> = {};
+  for (const [key, info] of Object.entries(workspaceInfo)) {
+    const packageJsonPath = join(process.cwd(), info.location, 'package.json');
+    const manifest = JSON.parse(readFileSync(packageJsonPath, { encoding: 'utf-8' }));
+    res[key] = {
+      ...info,
+      manifest
+    };
+  }
+  return res;
+}
+
+export function getWorkspaceDependencies (): Record<PackageName, Record<VersionString, DependencyInfo[]>> {
+  const workspaceInfo = getExtendedWorkspaceInfo();
 
   const dependenciesRecord: Record<string, Record<string, DependencyInfo[]>> = {};
   for (const [dependent, info] of Object.entries(workspaceInfo)) {
-    const packageJsonPath = join(process.cwd(), info.location, 'package.json');
-    const { dependencies, devDependencies } = JSON.parse(readFileSync(packageJsonPath, { encoding: 'utf-8' }));
+    const { dependencies, devDependencies } = info.manifest;
 
     for (const [dependency, version] of [...Object.entries(dependencies), ...Object.entries(devDependencies)] as [string, string][]) {
       ((dependenciesRecord[dependency] ??= {})[version] ??= []).push({
