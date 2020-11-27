@@ -33,7 +33,7 @@ export async function upgrade (opts: UpgradeOpts) {
   const packages = Object.keys(dependencies).filter(name => match(name, opts));
 
   console.log('Querying NPM for package manifests...');
-  const manifests: Record<string, PackageManifest> = {};
+  const manifests: Record<string, PackageManifest | undefined> = {};
   await Promise.all(packages.map(async (name) => {
     manifests[name] = await getPackageManifest(name);
   }));
@@ -50,8 +50,10 @@ export async function upgrade (opts: UpgradeOpts) {
       moreStableInstalled = true;
       continue;
     }
-
-    const latestVersion = pickHighestCompatibleVersion(Object.keys(manifests[name].versions), getMajor(currentMaxVersion), opts.preid ?? preid);
+    if (!manifests[name]) {
+      continue;
+    }
+    const latestVersion = pickHighestCompatibleVersion(Object.keys(manifests[name]!.versions), getMajor(currentMaxVersion), opts.preid ?? preid);
     if (!latestVersion) {
       continue;
     }

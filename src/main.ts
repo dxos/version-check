@@ -15,13 +15,23 @@ yargs(process.argv.slice(2))
       .alias('f', 'fix')
       .describe('f', 'Fix errors automatically.'),
     argv => {
-      check(!!argv.fix);
+      try {
+        check(!!argv.fix);
+      } catch (err) {
+        console.error(err);
+        process.exit(-1);
+      }
     }
   )
   .command<{ fix?: boolean }>('installed', 'Check installed node_modules',
     yargs => yargs,
     () => {
-      checkInstalled();
+      try {
+        checkInstalled();
+      } catch (err) {
+        console.error(err);
+        process.exit(-1);
+      }
     }
   )
   .command<UpgradeOpts>('upgrade', 'Upgrade to the latest version from NPM',
@@ -37,7 +47,12 @@ yargs(process.argv.slice(2))
       .boolean('force')
       .describe('force', 'Force upgrade packages even to lower stability level'),
     argv => {
-      upgrade(argv);
+      try {
+        upgrade(argv);
+      } catch (err) {
+        console.error(err);
+        process.exit(-1);
+      }
     }
   )
   .demandCommand(1)

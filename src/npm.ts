@@ -12,11 +12,15 @@ export interface PackageManifest {
   versions: Record<VersionString, unknown>
 }
 
-export async function getPackageManifest (name: PackageName): Promise<PackageManifest> {
+export async function getPackageManifest (name: PackageName): Promise<PackageManifest | undefined> {
   const res = await fetch(`https://registry.npmjs.com/${name}`);
   const data = await res.json();
   if (res.status !== 200) {
-    throw new Error(`Failed to get package manifest: ${data.error}`);
+    if (data.error === 'Not found') {
+      return undefined;
+    } else {
+      throw new Error(`Failed to get package manifest for ${name}: ${data.error}`);
+    }
   }
   return data;
 }
