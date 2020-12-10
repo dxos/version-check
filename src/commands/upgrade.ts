@@ -6,7 +6,15 @@ import chalk from 'chalk';
 import { join } from 'path';
 
 import { getPackageManifest, PackageManifest } from '../npm';
-import { getHighestVersion, getMajor, getPreid, isMoreStable, pickHighestCompatibleVersion, VersionString } from '../version';
+import {
+  getHighestVersion,
+  getMajor,
+  getPreid,
+  isMoreStable,
+  isRepoReference,
+  pickHighestCompatibleVersion,
+  VersionString
+} from '../version';
 import { changePackageVersion, getWorkspaceDependencies, PackageName } from '../workspace';
 
 export interface UpgradeOpts {
@@ -59,8 +67,10 @@ export async function upgrade (opts: UpgradeOpts) {
     }
 
     for (const version of Object.keys(dependencies[name])) {
-      if (version !== latestVersion) {
-        updates[name] = { from: version, to: latestVersion };
+      const cleanVersion = isRepoReference(version) ? version : version.replace(/^[^\d]/, '');
+      if (cleanVersion !== latestVersion) {
+        const prefix = version.slice(0, version.length - cleanVersion!.length);
+        updates[name] = { from: version, to: prefix + latestVersion };
       }
     }
   }

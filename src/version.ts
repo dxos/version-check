@@ -13,7 +13,7 @@ export function getHighestVersion (versions: VersionString[]): VersionString {
   return versionsSorted[versionsSorted.length - 1];
 }
 
-const isRepoReference = (version: VersionString) => version.match(/^[a-zA-Z0-9_]+\/[a-zA-Z0-9_]+$/);
+export const isRepoReference = (version: VersionString) => version.match(/^[a-zA-Z0-9_]+\/[a-zA-Z0-9_]+$/);
 const isTagLiteral = (version: VersionString) => version.match(/^[a-zA-Z0-9_]+$/);
 
 export function getPreid (version: VersionString) {
