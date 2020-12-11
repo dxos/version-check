@@ -7,11 +7,12 @@ import { join } from 'path';
 import { satisfies } from 'semver';
 
 import { getHighestVersion } from '../version';
-import { changePackageVersion, getExtendedWorkspaceInfo, getWorkspaceDependencies } from '../workspace';
+import { changePackageVersion, findWorkspaceRoot, getExtendedWorkspaceInfo, getWorkspaceDependencies } from '../workspace';
 
 export function check (shouldFix: boolean) {
   const workspaceInfo = getExtendedWorkspaceInfo();
   const dependenciesRecord = getWorkspaceDependencies();
+  const workspaceRoot = findWorkspaceRoot();
   let shouldError = false;
   let didFix = false;
   for (const dependency of Object.keys(dependenciesRecord)) {
@@ -22,7 +23,7 @@ export function check (shouldFix: boolean) {
             const newVersion = `^${workspaceInfo[dependency].manifest.version}`;
             console.log(chalk`Updating all usages of workspace package {bold ${dependency}} to {bold ${newVersion}}`);
             for (const location of dependenciesRecord[dependency][version]) {
-              const packageJsonPath = join(process.cwd(), location.path, 'package.json');
+              const packageJsonPath = join(workspaceRoot, location.path, 'package.json');
               changePackageVersion(packageJsonPath, dependency, newVersion);
             }
             didFix = true;
@@ -31,7 +32,7 @@ export function check (shouldFix: boolean) {
             console.log(chalk`\n{red error:} Dependency on workspace package {bold ${dependency}} uses a version range incompatible with the current source.`);
             console.log(chalk`Version requested: {bold ${version}}. Current version: {bold ${workspaceInfo[dependency].manifest.version}}`);
             for (const location of dependenciesRecord[dependency][version]) {
-              console.log(chalk`  in ${join(process.cwd(), location.path, 'package.json')}`);
+              console.log(chalk`  in ${join(workspaceRoot, location.path, 'package.json')}`);
             }
             console.log('\n');
           }
@@ -48,7 +49,7 @@ export function check (shouldFix: boolean) {
 
       for (const infos of Object.values(dependenciesRecord[dependency])) {
         for (const info of infos) {
-          const packageJsonPath = join(process.cwd(), info.path, 'package.json');
+          const packageJsonPath = join(workspaceRoot, info.path, 'package.json');
           changePackageVersion(packageJsonPath, dependency, top);
         }
       }
@@ -60,7 +61,7 @@ export function check (shouldFix: boolean) {
       console.log(chalk`Found multiple different version specifiers of {bold ${dependency}} in the workspace:`);
       for (const [version, infos] of Object.entries(dependenciesRecord[dependency])) {
         for (const info of infos) {
-          console.log(chalk`\t {bold ${version}} in ${join(process.cwd(), info.path, 'package.json')}`);
+          console.log(chalk`\t {bold ${version}} in ${join(workspaceRoot, info.path, 'package.json')}`);
         }
       }
     }

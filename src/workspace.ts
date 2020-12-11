@@ -3,8 +3,8 @@
 //
 
 import { execSync } from 'child_process';
-import { readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { fstat, readFileSync, writeFileSync } from 'fs';
+import { basename, dirname, join } from 'path';
 
 import { VersionString } from './version';
 
@@ -47,10 +47,11 @@ export function getWorkspaceInfo (): Record<PackageName, WorkspacePackageInfo> {
 
 export function getExtendedWorkspaceInfo (): Record<PackageName, ExtendedWorkspacePackageInfo> {
   const workspaceInfo = getWorkspaceInfo();
+  const workspaceRoot = findWorkspaceRoot();
 
   const res: Record<PackageName, ExtendedWorkspacePackageInfo> = {};
   for (const [key, info] of Object.entries(workspaceInfo)) {
-    const packageJsonPath = join(process.cwd(), info.location, 'package.json');
+    const packageJsonPath = join(workspaceRoot, info.location, 'package.json');
     const manifest = JSON.parse(readFileSync(packageJsonPath, { encoding: 'utf-8' }));
     res[key] = {
       ...info,
@@ -100,4 +101,18 @@ export function changePackageVersion (packageJsonPath: string, dependency: Packa
   if (didUpdate) {
     writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
   }
+}
+
+export function findWorkspaceRoot (from = process.cwd()): string {
+  try {
+    const pkg = JSON.parse(readFileSync(join(from, 'package.json'), { encoding: 'utf-8' }));
+    if (pkg.workspaces) {
+      return from;
+    }
+  } catch {}
+
+  if (from === '/') {
+    throw new Error('Cannot find workspace root.');
+  }
+  return findWorkspaceRoot(dirname(from));
 }

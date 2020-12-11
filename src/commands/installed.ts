@@ -7,7 +7,7 @@ import { existsSync, readdirSync, readFileSync, lstatSync } from 'fs';
 import { join } from 'path';
 
 import { VersionString } from '../version';
-import { getWorkspaceInfo, PackageName } from '../workspace';
+import { findWorkspaceRoot, getWorkspaceInfo, PackageName } from '../workspace';
 
 export function checkInstalled (nameFilter?: PackageName) {
   const installed = getInstalledModules();
@@ -79,15 +79,16 @@ interface InstalledModules {
 }
 
 function getInstalledModules (): InstalledModules {
+  const workspaceRoot = findWorkspaceRoot();
   let root: InstalledPackage[] = [];
   const packages: Record<PackageName, InstalledPackage[]> = {};
-  if (existsSync(join(process.cwd(), 'node_modules/@dxos'))) {
-    root = readModules(join(process.cwd(), 'node_modules/@dxos'));
+  if (existsSync(join(workspaceRoot, 'node_modules/@dxos'))) {
+    root = readModules(join(workspaceRoot, 'node_modules/@dxos'));
   }
   const workspaceInfo = getWorkspaceInfo();
   for (const [name, info] of Object.entries(workspaceInfo)) {
-    if (existsSync(join(process.cwd(), info.location, 'node_modules/@dxos'))) {
-      packages[name] = readModules(join(process.cwd(), info.location, 'node_modules/@dxos'));
+    if (existsSync(join(workspaceRoot, info.location, 'node_modules/@dxos'))) {
+      packages[name] = readModules(join(workspaceRoot, info.location, 'node_modules/@dxos'));
     }
   }
   return {

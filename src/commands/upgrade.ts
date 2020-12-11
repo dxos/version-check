@@ -7,7 +7,7 @@ import { join } from 'path';
 
 import { getPackageManifest, PackageManifest } from '../npm';
 import { getHighestVersion, getMajor, getPreid, isMoreStable, pickHighestCompatibleVersion, VersionString } from '../version';
-import { changePackageVersion, getWorkspaceDependencies, PackageName } from '../workspace';
+import { changePackageVersion, findWorkspaceRoot, getWorkspaceDependencies, PackageName } from '../workspace';
 
 export interface UpgradeOpts {
   scope?: string,
@@ -29,6 +29,7 @@ function match (name: PackageName, opts: UpgradeOpts) {
 
 export async function upgrade (opts: UpgradeOpts) {
   const dependencies = getWorkspaceDependencies();
+  const workspaceRoot = findWorkspaceRoot();
 
   const packages = Object.keys(dependencies).filter(name => match(name, opts));
 
@@ -87,7 +88,7 @@ export async function upgrade (opts: UpgradeOpts) {
     for (const [name, { to }] of Object.entries(updates)) {
       for (const infos of Object.values(dependencies[name])) {
         for (const info of infos) {
-          const packageJsonPath = join(process.cwd(), info.path, 'package.json');
+          const packageJsonPath = join(workspaceRoot, info.path, 'package.json');
           changePackageVersion(packageJsonPath, name, to);
         }
       }
