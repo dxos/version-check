@@ -30,7 +30,7 @@ export function checkInstalled (nameFilter?: PackageName) {
 
   console.log('\nDuplicates found:');
   for (const [name, version] of Object.entries(versions)) {
-    if(nameFilter && name !== nameFilter) {
+    if (nameFilter && name !== nameFilter) {
       continue;
     }
     if (version.size === 1) {
@@ -113,11 +113,11 @@ function getInstalledVersions (modules: InstalledModules): Record<PackageName, S
   return versions;
 }
 
-function filterPackages(installed: InstalledModules, packageName: PackageName) {
-  function walkSubtree(installedPackage: InstalledPackage): boolean {
+function filterPackages (installed: InstalledModules, packageName: PackageName) {
+  function walkSubtree (installedPackage: InstalledPackage): boolean {
     let keep = false;
     installedPackage.dependencies = installedPackage.dependencies.filter(dep => {
-      if(walkSubtree(dep)) {
+      if (walkSubtree(dep)) {
         keep = true;
         return true;
       } else {
@@ -125,7 +125,7 @@ function filterPackages(installed: InstalledModules, packageName: PackageName) {
       }
     });
 
-    if(installedPackage.name === packageName) {
+    if (installedPackage.name === packageName) {
       keep = true;
     }
     return keep;
@@ -133,13 +133,13 @@ function filterPackages(installed: InstalledModules, packageName: PackageName) {
 
   installed.root = installed.root.filter(dep => {
     return walkSubtree(dep);
-  })
+  });
 
-  for(const pkg of Object.keys(installed.packages)) {
+  for (const pkg of Object.keys(installed.packages)) {
     installed.packages[pkg] = installed.packages[pkg].filter(dep => {
       return walkSubtree(dep);
-    })
-    if(installed.packages[pkg].length === 0) {
+    });
+    if (installed.packages[pkg].length === 0) {
       delete installed.packages[pkg];
     }
   }
