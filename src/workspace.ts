@@ -3,8 +3,8 @@
 //
 
 import { execSync } from 'child_process';
-import { fstat, readFileSync, writeFileSync } from 'fs';
-import { basename, dirname, join } from 'path';
+import { readFileSync, writeFileSync } from 'fs';
+import { dirname, join } from 'path';
 
 import { VersionString } from './version';
 
