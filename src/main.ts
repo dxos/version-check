@@ -23,11 +23,13 @@ yargs(process.argv.slice(2))
       }
     }
   )
-  .command<{ fix?: boolean }>('installed', 'Check installed node_modules',
-    yargs => yargs,
-    () => {
+  .command<{ package?: string }>('installed', 'Check installed node_modules',
+    yargs => yargs
+      .string('package')
+      .describe('package', 'Display this package only'),
+    ({ package: pkg }) => {
       try {
-        checkInstalled();
+        checkInstalled(pkg);
       } catch (err) {
         console.error(err);
         process.exit(-1);

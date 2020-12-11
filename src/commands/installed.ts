@@ -9,9 +9,13 @@ import { join } from 'path';
 import { VersionString } from '../version';
 import { getWorkspaceInfo, PackageName } from '../workspace';
 
-export function checkInstalled () {
+export function checkInstalled (nameFilter?: PackageName) {
   const installed = getInstalledModules();
   const versions = getInstalledVersions(installed);
+
+  if (nameFilter) {
+    filterPackages(installed, nameFilter);
+  }
 
   const format = (pkg: InstalledPackage) => chalk[versions[pkg.name].size === 1 ? 'white' : 'red'](`${pkg.name}@${pkg.version}${pkg.isSymlink ? chalk.bold` <symlink>` : ''}`);
 
@@ -26,6 +30,9 @@ export function checkInstalled () {
 
   console.log('\nDuplicates found:');
   for (const [name, version] of Object.entries(versions)) {
+    if(nameFilter && name !== nameFilter) {
+      continue;
+    }
     if (version.size === 1) {
       continue;
     }
@@ -104,6 +111,38 @@ function getInstalledVersions (modules: InstalledModules): Record<PackageName, S
     walkTree(pkg);
   }
   return versions;
+}
+
+function filterPackages(installed: InstalledModules, packageName: PackageName) {
+  function walkSubtree(installedPackage: InstalledPackage): boolean {
+    let keep = false;
+    installedPackage.dependencies = installedPackage.dependencies.filter(dep => {
+      if(walkSubtree(dep)) {
+        keep = true;
+        return true;
+      } else {
+        return false;
+      }
+    });
+
+    if(installedPackage.name === packageName) {
+      keep = true;
+    }
+    return keep;
+  }
+
+  installed.root = installed.root.filter(dep => {
+    return walkSubtree(dep);
+  })
+
+  for(const pkg of Object.keys(installed.packages)) {
+    installed.packages[pkg] = installed.packages[pkg].filter(dep => {
+      return walkSubtree(dep);
+    })
+    if(installed.packages[pkg].length === 0) {
+      delete installed.packages[pkg];
+    }
+  }
 }
 
 function printSubtree (packages: InstalledPackage[], spacing: string, format: (pkg: InstalledPackage) => string) {
