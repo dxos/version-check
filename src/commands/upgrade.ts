@@ -16,6 +16,7 @@ export interface UpgradeOpts {
   preid?: string
   force?: boolean
   tilde?: boolean
+  to?: string
 }
 
 function match (name: PackageName, opts: UpgradeOpts) {
@@ -44,25 +45,33 @@ export async function upgrade (opts: UpgradeOpts) {
   const updates: Record<PackageName, { from: VersionString, to: VersionString }> = {};
   let moreStableInstalled = false;
   for (const name of packages) {
-    const currentMaxVersion = getHighestVersion(Object.keys(dependencies[name]));
-    const preid = getPreid(currentMaxVersion);
+    if (opts.to) {
+      for (const version of Object.keys(dependencies[name])) {
+        if (version !== opts.to) {
+          updates[name] = { from: version, to: opts.to };
+        }
+      }
+    } else {
+      const currentMaxVersion = getHighestVersion(Object.keys(dependencies[name]));
+      const preid = getPreid(currentMaxVersion);
 
-    if (!opts.force && opts.preid && isMoreStable(preid, opts.preid)) {
-      console.log(chalk`More stable version for {bold ${name}} is already installed: {bold ${currentMaxVersion}}. Skipping.`);
-      moreStableInstalled = true;
-      continue;
-    }
-    if (!manifests[name]) {
-      continue;
-    }
-    const latestVersion = pickHighestCompatibleVersion(Object.keys(manifests[name]!.versions), getMajor(currentMaxVersion), opts.preid ?? preid);
-    if (!latestVersion) {
-      continue;
-    }
+      if (!opts.force && opts.preid && isMoreStable(preid, opts.preid)) {
+        console.log(chalk`More stable version for {bold ${name}} is already installed: {bold ${currentMaxVersion}}. Skipping.`);
+        moreStableInstalled = true;
+        continue;
+      }
+      if (!manifests[name]) {
+        continue;
+      }
+      const latestVersion = pickHighestCompatibleVersion(Object.keys(manifests[name]!.versions), getMajor(currentMaxVersion), opts.preid ?? preid);
+      if (!latestVersion) {
+        continue;
+      }
 
-    for (const version of Object.keys(dependencies[name])) {
-      if (version !== latestVersion) {
-        updates[name] = { from: version, to: opts.tilde ? `~${latestVersion}` : latestVersion };
+      for (const version of Object.keys(dependencies[name])) {
+        if (version !== latestVersion) {
+          updates[name] = { from: version, to: opts.tilde ? `~${latestVersion}` : latestVersion };
+        }
       }
     }
   }

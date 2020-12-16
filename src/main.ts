@@ -49,7 +49,9 @@ yargs(process.argv.slice(2))
       .boolean('force')
       .describe('force', 'Force upgrade packages even to lower stability level')
       .boolean('tilde')
-      .describe('tilde', 'Use tilde `~` version ranges'),
+      .describe('tilde', 'Use tilde `~` version ranges')
+      .string('to')
+      .describe('to', 'Force specific version'),
     argv => {
       try {
         upgrade(argv);
