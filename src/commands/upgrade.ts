@@ -15,6 +15,7 @@ export interface UpgradeOpts {
   'dry-run'?: string
   preid?: string
   force?: boolean
+  tilde?: boolean
 }
 
 function match (name: PackageName, opts: UpgradeOpts) {
@@ -61,7 +62,7 @@ export async function upgrade (opts: UpgradeOpts) {
 
     for (const version of Object.keys(dependencies[name])) {
       if (version !== latestVersion) {
-        updates[name] = { from: version, to: latestVersion };
+        updates[name] = { from: version, to: opts.tilde ? `~${latestVersion}` : latestVersion };
       }
     }
   }
