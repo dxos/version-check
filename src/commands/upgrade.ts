@@ -67,10 +67,11 @@ export async function upgrade (opts: UpgradeOpts) {
       if (!latestVersion) {
         continue;
       }
+      const to = opts.tilde ? `~${latestVersion}` : latestVersion
 
       for (const version of Object.keys(dependencies[name])) {
-        if (version !== latestVersion) {
-          updates[name] = { from: version, to: opts.tilde ? `~${latestVersion}` : latestVersion };
+        if (version !== to) {
+          updates[name] = { from: version, to };
         }
       }
     }
