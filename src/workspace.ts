@@ -26,8 +26,8 @@ export interface WorkspacePackageInfo {
 export interface PackageJson {
   name: PackageName
   version: VersionString
-  dependencies: Record<PackageName, VersionString>
-  devDependencies: Record<PackageName, VersionString>
+  dependencies?: Record<PackageName, VersionString>
+  devDependencies?: Record<PackageName, VersionString>
 }
 
 export interface ExtendedWorkspacePackageInfo extends WorkspacePackageInfo {
@@ -66,7 +66,7 @@ export function getWorkspaceDependencies (): Record<PackageName, Record<VersionS
 
   const dependenciesRecord: Record<string, Record<string, DependencyInfo[]>> = {};
   for (const [dependent, info] of Object.entries(workspaceInfo)) {
-    const { dependencies, devDependencies } = info.manifest;
+    const { dependencies = {}, devDependencies = {} } = info.manifest;
 
     for (const [dependency, version] of [...Object.entries(dependencies), ...Object.entries(devDependencies)] as [string, string][]) {
       ((dependenciesRecord[dependency] ??= {})[version] ??= []).push({
