@@ -17,20 +17,21 @@ yarn add -DW @dxos/version-check
 Run with no arguments to check if all dependencies share the same version specifier:
 
 ```bash
-version-check
+yarn version-check
 ```
 
 Use `-f` to automatically update all versions to the latest one out of them:
 
 ```bash
-version-check -f
+yarn version-check -f
 ```
 
 #### Checking installed node_modules
 
+The following command prints the entire `node_modules` structure and checks for duplicates.
+
 ```bash
-# Print the whole node_modules structure and check for any duplicates
-version-check installed
+yarn version-check installed
 ```
 
 ### Upgrading
