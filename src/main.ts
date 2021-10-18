@@ -6,6 +6,7 @@ import yargs from 'yargs';
 
 import { check } from './commands/check';
 import { checkInstalled } from './commands/installed';
+import { merge, MergeOpts } from './commands/merge';
 import { upgrade, UpgradeOpts } from './commands/upgrade';
 
 // eslint-disable-next-line no-unused-expressions
@@ -55,6 +56,29 @@ yargs(process.argv.slice(2))
     argv => {
       try {
         upgrade(argv);
+      } catch (err) {
+        console.error(err);
+        process.exit(-1);
+      }
+    }
+  )
+  .command<MergeOpts>('merge <ours> <ancestor> <theirs>', 'Merge package.json files', // https://git-scm.com/docs/gitattributes#_defining_a_custom_merge_driver
+    yargs => yargs
+      .positional('ours', {
+        describe: 'common ancestor file path',
+        type: 'string',
+      })
+      .positional('ancestor', {
+        describe: 'our file path',
+        type: 'string',
+      })
+      .positional('theirs', {
+        describe: 'their file path',
+        type: 'string',
+      }),
+    argv => {
+      try {
+        merge(argv);
       } catch (err) {
         console.error(err);
         process.exit(-1);
