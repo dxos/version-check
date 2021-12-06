@@ -1,5 +1,7 @@
 # version-check
 
+DEPRECATED (see `npm-check-updates`).
+
 Makes sure you only have a single version of a given dependency in a workspace.
 
 ## Installation 
